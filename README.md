@@ -1,6 +1,7 @@
 # danger-jira_issue_links
+### Plugin for [Danger](https://danger.systems/)
 
-Collect issue mentions from git commit messages and obtain info from Jira issue tracker.<br>
+It is plugin for collect issue mentions from git commit messages and obtain info from Jira issue tracker.<br>
 Commit message should starts with pattern `[TASK-123]`, where TASK is id of jira project, 123 is issue number. For example commit message: 
 ```
 [JSGLK-1145] Resolve bug with incorrect price calculation
@@ -11,6 +12,12 @@ Results are passed out as a table in the Danger comment for merge request.
 
 
 ## Installation
+
+If you use Bundler, add next line to `Gemfile` and execute `bundle install`
+
+    gem 'danger-jira_issue_links'
+
+Or install manually
 
     $ gem install danger-jira_issue_links
 
