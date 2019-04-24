@@ -1,8 +1,8 @@
 # danger-jira_issue_links
 ### Plugin for [Danger](https://danger.systems/)
 
-It is plugin for collect issue mentions from git commit messages and obtain info from Jira issue tracker.<br>
-Commit message should starts with pattern `[TASK-123]`, where TASK is id of jira project, 123 is issue number. For example commit message: 
+This plugin collects issue mentions from git commit messages and obtains info from Jira issue tracker.<br>
+Commit message should start with pattern `[TASK-123]`, where TASK is Jira project Id and 123 is issue number. For example, for commit message:
 ```
 [JSGLK-1145] Resolve bug with incorrect price calculation
 ```
@@ -23,6 +23,8 @@ Or install manually
 
 ## Usage
 
+In `Dangerfile` add next lines:
+
 Configure connection to you Jira instance
 
 ```
@@ -37,7 +39,7 @@ jira_issue_links.print_links_with_titles
 ```
 
 Find all issue mentions in commit messages and make links. <br>
-No required access to Jira, needs only base url - `jira_site`.
+Not required access to Jira, needs only base url - `jira_site`.
 ```
 jira_issue_links.print_links_only
 ```
