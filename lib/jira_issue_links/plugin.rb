@@ -73,7 +73,7 @@ module Danger
 
       message = "## Jira issues\n\n"
       message << "| | |\n"
-      message << "| --- | ----- |\n"
+      message << "| --- | --- | ----- |\n"
 
       begin
         found_issues.each do |issue_id| 
@@ -82,6 +82,7 @@ module Danger
           description = issue.summary
           description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
           message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
+          message << "Resolves #{issue_id} | "
           message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
         end
       rescue JIRA::HTTPError => e
