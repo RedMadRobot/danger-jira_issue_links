@@ -71,7 +71,7 @@ module Danger
           auth_type:    :basic
       )
 
-      message = "### Jira issues\n\n"
+      message = "## Jira issues\n\n"
       message << "| | |\n"
       message << "| --- | ----- |\n"
 
@@ -79,8 +79,10 @@ module Danger
         found_issues.each do |issue_id| 
           issue = client.Issue.jql("ID = '#{issue_id}'").first
           return if issue.nil?
+          description = issue.summary
+          description = description.gsub(/<|>/) { |bracket| "\\#{bracket}" }
           message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
-          message << "[#{issue.summary}](#{jira_site}/browse/#{issue_id})\n" 
+          message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
         end
       rescue JIRA::HTTPError => e
         print e.message
