@@ -72,7 +72,7 @@ module Danger
       )
 
       message = "## Jira issues\n\n"
-      message << "| | |\n"
+      message << "| | | |\n"
       message << "| --- | --- | ----- |\n"
 
       begin
