@@ -80,7 +80,7 @@ module Danger
           issue = client.Issue.jql("ID = '#{issue_id}'").first
           return if issue.nil?
           description = issue.summary
-          description = description.gsub(/<|>/) { |bracket| "\\#{bracket}" }
+          description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
           message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
           message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
         end
