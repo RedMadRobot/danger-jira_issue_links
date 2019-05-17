@@ -39,6 +39,13 @@ module Danger
     # @return   [String]
     attr_accessor :jira_context_path
 
+    # If `true` then in report will be added "Resolves" keyword for automatic resolve issue in jira. 
+    # @see https://docs.gitlab.com/ee/user/project/integrations/jira.html
+    # Default - false
+    #
+    # @return   [Bool]
+    attr_accessor :include_resolves_keyword
+
 
     # Find all issue references in commit messages.
     # Message should starts with pattern: `[TASK-123]`
@@ -71,9 +78,16 @@ module Danger
           auth_type:    :basic
       )
 
+      include_resolves_keyword = false if include_resolves_keyword.nil?
+
       message = "## Jira issues\n\n"
-      message << "| | | |\n"
-      message << "| --- | --- | ----- |\n"
+      if include_resolves_keyword
+        message << "| | | |\n"
+        message << "| --- | --- | ----- |\n"
+      else 
+        message << "| | |\n"
+        message << "| --- | ----- |\n"
+      end
 
       begin
         found_issues.each do |issue_id| 
@@ -82,7 +96,9 @@ module Danger
           description = issue.summary
           description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
           message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
-          message << "Resolves #{issue_id} | "
+          if include_resolves_keyword
+            message << "Resolves #{issue_id} | "
+          end
           message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
         end
       rescue JIRA::HTTPError => e
@@ -103,6 +119,9 @@ module Danger
 
       message = "### Jira issues\n\n"
       found_issues.each do |issue_id| 
+        if include_resolves_keyword
+          message << "Resolves "
+        end
         message << "[#{issue_id}](#{jira_site}/browse/#{issue_id})\n\n" 
       end
 
