@@ -78,6 +78,7 @@ module Danger
           auth_type:    :basic
       )
 
+      puts include_resolves_keyword
       include_resolves_keyword = false if include_resolves_keyword.nil?
 
       message = "## Jira issues\n\n"
