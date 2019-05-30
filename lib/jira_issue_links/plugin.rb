@@ -1,4 +1,5 @@
 require 'jira-ruby'
+require_relative 'jira_issue'
 
 module Danger
 
@@ -46,21 +47,14 @@ module Danger
     # @return   [Bool]
     attr_accessor :include_resolves_keyword
 
-    # Jira Client instance
-    attr_reader :jira_client
-
     # Find all issue references in commit messages.
     # Message should starts with pattern: `[TASK-123]`
     # @return   [Array<String>]
     def collect_issues_from_commits 
-      all_issues = []
-      git.commits.each do |c|
-          captures = c.message.match(/^\[(\w+-\d+)\]*./)&.captures
-          if captures
-            all_issues.push(captures[0])
-          end
-      end
-      all_issues.uniq
+      git.commits
+         .flat_map { |c| c.message.match(/^\[(\w+-\d+)\]/)&.captures }
+         .compact
+         .uniq
     end
 
     # Generates a `markdown` table of issues with type, title and link.
@@ -70,9 +64,6 @@ module Danger
     def print_links_with_titles
       found_issues = collect_issues_from_commits
       return if found_issues.empty?
-
-      p include_resolves_keyword
-      include_resolves_keyword = false if include_resolves_keyword.nil?
 
       message = "## Jira issues\n\n"
       if include_resolves_keyword
@@ -89,11 +80,11 @@ module Danger
           return if issue.nil?
           description = issue.summary
           description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
-          message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
+          message << "![#{issue.issuetype}](#{issue.iconUrl}) | "
           if include_resolves_keyword
             message << "Resolves #{issue_id} | "
           end
-          message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
+          message << "[#{description}](#{jira_site}/browse/#{issue_id})\n"
         end
       rescue JIRA::HTTPError => e
         print e.message
@@ -111,33 +102,36 @@ module Danger
       found_issues = collect_issues_from_commits
       return if found_issues.empty?
 
-      message = "### Jira issues\n\n"
-      found_issues.each do |issue_id| 
+      message = "## Jira issues\n\n"
+      found_issues.each do |issue_id|
         if include_resolves_keyword
           message << "Resolves "
         end
-        message << "[#{issue_id}](#{jira_site}/browse/#{issue_id})\n\n" 
+        message << "[#{issue_id}](#{jira_site}/browse/#{issue_id})\n\n"
       end
 
       markdown message
     end
 
-    
+
     private
 
-    attr_writer :jira_client
+    def jira_client
+      jira_context_path = '' if jira_context_path.nil?
+      @jira_client = JIRA::Client.new(
+        username:     jira_username,
+        password:     jira_password,
+        site:         jira_site,
+        context_path: jira_context_path,
+        auth_type:    :basic
+      ) if @jira_client.nil?
+      return @jira_client
+    end
 
     def obtain_issue(issue_id) 
-      jira_context_path = '' if jira_context_path.nil?
-      jira_client = JIRA::Client.new(
-          username:     jira_username,
-          password:     jira_password,
-          site:         jira_site,
-          context_path: jira_context_path,
-          auth_type:    :basic
-      ) if jira_client.nil?
-
-      return jira_client.Issue.jql("ID = '#{issue_id}'").first
+      issue = jira_client.Issue.jql("ID = '#{issue_id}'").first
+      return if issue.nil?
+      return JiraIssue.new(issue_id, issue.summary, issue.issuetype.name, issue.issuetype.iconUrl)
     end
 
   end
