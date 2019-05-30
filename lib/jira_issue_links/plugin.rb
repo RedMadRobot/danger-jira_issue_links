@@ -46,6 +46,8 @@ module Danger
     # @return   [Bool]
     attr_accessor :include_resolves_keyword
 
+    # Jira Client instance
+    attr_reader :jira_client
 
     # Find all issue references in commit messages.
     # Message should starts with pattern: `[TASK-123]`
@@ -69,16 +71,7 @@ module Danger
       found_issues = collect_issues_from_commits
       return if found_issues.empty?
 
-      jira_context_path = '' if jira_context_path.nil?
-      client = JIRA::Client.new(
-          username:     jira_username,
-          password:     jira_password,
-          site:         jira_site,
-          context_path: jira_context_path,
-          auth_type:    :basic
-      )
-
-      puts include_resolves_keyword
+      p include_resolves_keyword
       include_resolves_keyword = false if include_resolves_keyword.nil?
 
       message = "## Jira issues\n\n"
@@ -92,7 +85,7 @@ module Danger
 
       begin
         found_issues.each do |issue_id| 
-          issue = client.Issue.jql("ID = '#{issue_id}'").first
+          issue = obtain_issue(issue_id)
           return if issue.nil?
           description = issue.summary
           description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
@@ -127,6 +120,24 @@ module Danger
       end
 
       markdown message
+    end
+
+    
+    private
+
+    attr_writer :jira_client
+
+    def obtain_issue(issue_id) 
+      jira_context_path = '' if jira_context_path.nil?
+      jira_client = JIRA::Client.new(
+          username:     jira_username,
+          password:     jira_password,
+          site:         jira_site,
+          context_path: jira_context_path,
+          auth_type:    :basic
+      ) if jira_client.nil?
+
+      return jira_client.Issue.jql("ID = '#{issue_id}'").first
     end
 
   end
