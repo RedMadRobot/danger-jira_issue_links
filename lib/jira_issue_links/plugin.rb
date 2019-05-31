@@ -18,6 +18,9 @@ module Danger
   #
   class DangerJiraIssueLinks < Plugin
 
+    # Private struct 
+    JiraIssue = Struct.new("JiraIssue", :id, :summary, :issuetype, :iconUrl)
+
     # Jira username
     #
     # @return   [String]
@@ -39,19 +42,21 @@ module Danger
     # @return   [String]
     attr_accessor :jira_context_path
 
+    # If `true` then in report will be added "Resolves" keyword for automatic resolve issue in jira. 
+    # @see https://docs.gitlab.com/ee/user/project/integrations/jira.html
+    # Default - false
+    #
+    # @return   [Bool]
+    attr_accessor :include_resolves_keyword
 
     # Find all issue references in commit messages.
     # Message should starts with pattern: `[TASK-123]`
     # @return   [Array<String>]
     def collect_issues_from_commits 
-      all_issues = []
-      git.commits.each do |c|
-          captures = c.message.match(/^\[(\w+-\d+)\]*./)&.captures
-          if captures
-            all_issues.push(captures[0])
-          end
-      end
-      all_issues.uniq
+      git.commits
+         .flat_map { |c| c.message.match(/^\[(\w+-\d+)\]/)&.captures }
+         .compact
+         .uniq
     end
 
     # Generates a `markdown` table of issues with type, title and link.
@@ -62,27 +67,26 @@ module Danger
       found_issues = collect_issues_from_commits
       return if found_issues.empty?
 
-      jira_context_path = '' if jira_context_path.nil?
-      client = JIRA::Client.new(
-          username:     jira_username,
-          password:     jira_password,
-          site:         jira_site,
-          context_path: jira_context_path,
-          auth_type:    :basic
-      )
-
       message = "## Jira issues\n\n"
-      message << "| | |\n"
-      message << "| --- | ----- |\n"
+      if include_resolves_keyword
+        message << "| | | |\n"
+        message << "| --- | --- | ----- |\n"
+      else 
+        message << "| | |\n"
+        message << "| --- | ----- |\n"
+      end
 
       begin
         found_issues.each do |issue_id| 
-          issue = client.Issue.jql("ID = '#{issue_id}'").first
+          issue = obtain_issue(issue_id)
           return if issue.nil?
           description = issue.summary
           description = description.gsub(/[<|>\[\]]/) { |bracket| "\\#{bracket}" }
-          message << "![#{issue.issuetype.name}](#{issue.issuetype.iconUrl}) | "
-          message << "[#{description}](#{jira_site}/browse/#{issue_id})\n" 
+          message << "![#{issue.issuetype}](#{issue.iconUrl}) | "
+          if include_resolves_keyword
+            message << "Resolves #{issue_id} | "
+          end
+          message << "[#{description}](#{jira_site}/browse/#{issue_id})\n"
         end
       rescue JIRA::HTTPError => e
         print e.message
@@ -100,12 +104,36 @@ module Danger
       found_issues = collect_issues_from_commits
       return if found_issues.empty?
 
-      message = "### Jira issues\n\n"
-      found_issues.each do |issue_id| 
-        message << "[#{issue_id}](#{jira_site}/browse/#{issue_id})\n\n" 
+      message = "## Jira issues\n\n"
+      found_issues.each do |issue_id|
+        if include_resolves_keyword
+          message << "Resolves "
+        end
+        message << "[#{issue_id}](#{jira_site}/browse/#{issue_id})\n\n"
       end
 
       markdown message
+    end
+
+
+    private
+
+    def jira_client
+      jira_context_path = '' if jira_context_path.nil?
+      @jira_client = JIRA::Client.new(
+        username:     jira_username,
+        password:     jira_password,
+        site:         jira_site,
+        context_path: jira_context_path,
+        auth_type:    :basic
+      ) if @jira_client.nil?
+      return @jira_client
+    end
+
+    def obtain_issue(issue_id) 
+      issue = jira_client.Issue.jql("ID = '#{issue_id}'").first
+      return if issue.nil?
+      return JiraIssue.new(issue_id, issue.summary, issue.issuetype.name, issue.issuetype.iconUrl)
     end
 
   end

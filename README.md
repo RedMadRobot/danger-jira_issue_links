@@ -33,6 +33,12 @@ jira_issue_links.jira_password = "password"
 jira_issue_links.jira_site = "https://your-company.atlassian.net"
 ```
 
+Option to include in output report phrase `Resolves TASK-123`, it help GitLab Jira plugin automatically close issues (see: [GitLab Jira integration](https://docs.gitlab.com/ee/user/project/integrations/jira.html#closing-jira-issues)).
+```
+jira_issue_links.include_resolves_keyword = true
+```
+
+
 Find all issue mentions in commit messages, obtain info from Jira and make table of links
 ```
 jira_issue_links.print_links_with_titles
