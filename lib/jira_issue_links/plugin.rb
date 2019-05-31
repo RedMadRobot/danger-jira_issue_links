@@ -1,5 +1,4 @@
 require 'jira-ruby'
-require_relative 'jira_issue'
 
 module Danger
 
@@ -18,6 +17,9 @@ module Danger
   # @tags jira, issue, task
   #
   class DangerJiraIssueLinks < Plugin
+
+    # Private struct 
+    JiraIssue = Struct.new("JiraIssue", :id, :summary, :issuetype, :iconUrl)
 
     # Jira username
     #

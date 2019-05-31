@@ -1,8 +1,11 @@
 require File.expand_path("../spec_helper", __FILE__)
-require File.expand_path("../../lib/jira_issue_links/jira_issue", __FILE__)
 
 module Danger
   describe Danger::DangerJiraIssueLinks do
+
+    # alias
+    JiraIssue = Danger::DangerJiraIssueLinks::JiraIssue
+
     it "should be a plugin" do
       expect(Danger::DangerJiraIssueLinks.new(nil)).to be_a Danger::Plugin
     end
