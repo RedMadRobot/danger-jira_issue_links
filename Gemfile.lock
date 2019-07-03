@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    danger-jira_issue_links (0.1.1)
+    danger-jira_issue_links (0.2.0)
       danger-plugin-api (~> 1.0)
       jira-ruby (~> 1.1)
 
@@ -97,7 +97,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
     psych (3.1.0)
-    public_suffix (3.1.0)
+    public_suffix (3.1.1)
     rainbow (3.0.0)
     rake (10.5.0)
     rb-fsevent (0.10.3)
@@ -136,7 +136,7 @@ GEM
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
     unicode-display_width (1.5.0)
-    yard (0.9.19)
+    yard (0.9.20)
 
 PLATFORMS
   ruby
@@ -151,7 +151,7 @@ DEPENDENCIES
   rake (~> 10.0)
   rspec (~> 3.4)
   rubocop
-  yard
+  yard (>= 0.9.20)
 
 BUNDLED WITH
    2.0.1
