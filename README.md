@@ -2,7 +2,9 @@
 ### Plugin for [Danger](https://danger.systems/)
 
 This plugin collects issue mentions from git commit messages and obtains info from Jira issue tracker.<br>
-Commit message should start with pattern `[TASK-123]`, where TASK is Jira project Id and 123 is issue number. For example, for commit message:
+
+By default, commit message should start with pattern `[TASK-123]` ([this can be configured](https://github.com/RedMadRobot/danger-jira_issue_links#usage)), where TASK is Jira project Id and 123 is issue number.    
+For example, for commit message:
 ```
 [JSGLK-1145] Resolve bug with incorrect price calculation
 ```
@@ -33,7 +35,20 @@ jira_issue_links.jira_password = "password"
 jira_issue_links.jira_site = "https://your-company.atlassian.net"
 ```
 
-Option to include in output report phrase `Resolves TASK-123`, it help GitLab Jira plugin automatically close issues (see: [GitLab Jira integration](https://docs.gitlab.com/ee/user/project/integrations/jira.html#closing-jira-issues)).
+You can configure regexp that finds `issue id` in commit messages. 
+
+For example - issue id can be anywhere in message, but it starts with `TASK-`
+```
+Fix bug as per TASK-1234
+```
+```
+jira_issue_links.issue_number_regexp = /(TASK-\d+)/
+```
+By [default](https://github.com/RedMadRobot/danger-jira_issue_links#plugin-for-danger) it is set to `/^\[(\w+-\d+)\]/` 
+
+
+The `include_resolves_keyword` option adds phrase `Resolves TASK-123` in output report.
+It allows GitLab Jira plugin to automatically close issues (see: [GitLab Jira integration](https://docs.gitlab.com/ee/user/project/integrations/jira.html#closing-jira-issues)).
 ```
 jira_issue_links.include_resolves_keyword = true
 ```

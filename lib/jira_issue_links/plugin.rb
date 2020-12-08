@@ -49,12 +49,21 @@ module Danger
     # @return   [Bool]
     attr_accessor :include_resolves_keyword
 
-    # Find all issue references in commit messages.
-    # Message should starts with pattern: `[TASK-123]`
+    # Regexp used to find issue id in commit message
+    # By default it should start with pattern: `[TASK-123]` - this produces id = "TASK-123"
+    #
+    # @return   [Regexp]
+    attr_accessor :issue_number_regexp
+
+    def issue_number_regexp
+      @issue_number_regexp || /^\[(\w+-\d+)\]/
+    end
+
+    # Find all issue references in commit messages that match issue_number_regexp
     # @return   [Array<String>]
     def collect_issues_from_commits 
       git.commits
-         .flat_map { |c| c.message.match(/^\[(\w+-\d+)\]/)&.captures }
+         .flat_map { |c| c.message.match(issue_number_regexp)&.captures }
          .compact
          .uniq
     end

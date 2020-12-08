@@ -16,7 +16,7 @@ module Danger
         @plugin = @dangerfile.jira_issue_links
       end
 
-      it "collect issues with regex" do 
+      it "collect issues with default regex" do 
         @plugin.include_resolves_keyword = true
 
         commits = [
@@ -31,6 +31,28 @@ module Danger
         expect(@plugin.git).to receive(:commits).and_return(commits)
         expect(@plugin.collect_issues_from_commits).to eql([
           "XX-123", "A-1"
+        ])
+
+      end
+
+      it "collect issues with custom regex" do 
+        @plugin.include_resolves_keyword = true
+        @plugin.issue_number_regexp = /(TASK-\d+)/
+
+        commits = [
+          "Fix bug as per TASK-12345",
+          "Fix bug as per ISSUE-12345",
+          "[Readme] TASK-123 add description for command line",
+          "[Readme] FILE-123 add description for command line",
+          "[TASK-1] add description to readme",
+          "[TEST-1] add description to readme"
+        ].map do |message|
+          instance_double('Commit', message: message)
+        end
+
+        expect(@plugin.git).to receive(:commits).and_return(commits)
+        expect(@plugin.collect_issues_from_commits).to eql([
+          "TASK-12345", "TASK-123", "TASK-1"
         ])
 
       end
