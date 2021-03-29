@@ -76,7 +76,7 @@ GEM
       multipart-post
       oauth (~> 0.5, >= 0.5.0)
     jwt (2.1.0)
-    kramdown (2.3.0)
+    kramdown (2.3.1)
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
